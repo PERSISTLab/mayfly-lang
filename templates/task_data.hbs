@@ -1,0 +1,31 @@
+
+/* 
+ * Start "{{name}}" task data definitions 
+ */
+typedef struct {
+	{{#task_output}}
+	{{type}} {{name}}[{{numitems}}];
+	{{/task_output}}
+	uint32_t timestamp[{{numitems}}];
+	uint8_t status;
+	uint8_t ndx;
+	uint8_t num;
+} __{{name}}_output_t;
+
+__{{name}}_output_t __{{name}}_output __attribute__ ((section ( ".nv" ))) = 
+	{
+		.timestamp = {0},
+		.status = 0,
+		.ndx = 0,
+		.num = 0
+	};
+
+// Task data available flags
+{{#available_data_registers}}
+#define DATA_AVAILABLE_{{name_caps}} 0b{{bit_field}}
+{{/available_data_registers}}
+/* 
+ * End "{{name}}" task data definitions
+ */
+ 
+ 

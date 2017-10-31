@@ -1,0 +1,36 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+sample_xl ( ) => (uint16_t x, uint16_t y, uint16_t z);
+stats_xl (uint16_t x[50], uint16_t y[50], uint16_t z[50]) => ( 
+		uint16_t x_out[50], uint16_t y_out[50], uint16_t z_out[50],
+		uint16_t max_x, uint16_t min_x, uint16_t avg_x, 
+		uint16_t max_y, uint16_t min_y, uint16_t avg_y,
+		uint16_t max_z, uint16_t min_z, uint16_t avg_z);
+stddev_xl ( uint16_t x_out[50], uint16_t y_out[50], uint16_t z_out[50],
+		uint16_t max_x, uint16_t min_x, uint16_t avg_x, 
+		uint16_t max_y, uint16_t min_y, uint16_t avg_y,
+		uint16_t max_z, uint16_t min_z, uint16_t avg_z) => ( 
+				uint16_t max_x_out, uint16_t min_x_out, uint16_t avg_x_out, uint16_t std_x, 
+				uint16_t max_y_out, uint16_t min_y_out, uint16_t avg_y_out, uint16_t std_y,
+				uint16_t max_z_out, uint16_t min_z_out, uint16_t avg_z_out, uint16_t std_z);
+store_compress_xl_stats ( uint16_t max_x_out, uint16_t min_x_out, uint16_t avg_x_out, uint16_t std_x, 
+		uint16_t max_y_out, uint16_t min_y_out, uint16_t avg_y_out, uint16_t std_y,
+		uint16_t max_z_out, uint16_t min_z_out, uint16_t avg_z_out, uint16_t std_z) => ();
+
+// Flow
+sample_xl -> stats_xl -> stddev_xl -> store_compress_xl_stats  {
+	
+}
+
+//Edge Dependencies
+sample_xl => stats_xl {
+	collect(50, 5s); // Collect 50 samples over 5s
+	expires(3s);	 // Expiration of the BUFFER: once 50 samples are collected, do not reattempt to collect until 5s later
+}
+
+stats_xl => stddev_xl {
+	
+}
+
+stddev_xl => store_compress_xl_stats {
+	// Stats are worth compressing so this never expires
+}

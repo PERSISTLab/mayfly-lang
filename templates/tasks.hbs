@@ -1,0 +1,8 @@
+/* 
+{{ graph_render }}
+ */
+#define NUM_NODES_TASK_{{name_caps}} {{num_tasks}}
+/* Priority list of indices of the tasks to execute in "{{name}}" task graph */
+const uint8_t pl_{{name}}[NUM_NODES_TASK_{{name_caps}}] = { {{exec_list}} };
+int8_t ndx_{{name}} = -1; 
+

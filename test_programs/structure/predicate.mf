@@ -1,0 +1,17 @@
+/* Task definitions */
+fubar () => ( uint8_t x1, uint8_t y1, uint8_t z1 );
+fu ( uint8_t x1, uint8_t y1, uint8_t z1 ) => ( ); 
+bar( uint8_t x1, uint8_t y1, uint8_t z1 ) => ( );
+
+/* Flow definitions and policy information */
+fubar[_,_,1] -> fu;
+fubar[_,_,0] -> bar;
+
+/* Dependancies / Constraints */
+fubar => fu {
+	collect(5, 1s);
+}
+
+fubar => bar {
+	
+}

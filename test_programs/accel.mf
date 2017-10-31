@@ -1,0 +1,11 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+sample_xl ( ) => (uint16_t x, uint16_t y, uint16_t z);
+wait (uint16_t x, uint16_t y, uint16_t z) => ( );
+// Flow
+sample_xl -> wait {
+	
+}
+
+//Edge Dependencies
+sample_xl => wait {
+}

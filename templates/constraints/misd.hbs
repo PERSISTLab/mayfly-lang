@@ -1,0 +1,7 @@
+			{{#isMisd}}
+			// MISD defined so check to see if possible to generate more data
+			if(__mayfly_state.current_time < 
+				__{{source}}_output.timestamp[(__{{source}}_output.ndx + (~0)) & {{buffer_size_mask}}] + {{misd}}) {
+				constraints_satisfied = 0;
+			}{{/isMisd}}
+

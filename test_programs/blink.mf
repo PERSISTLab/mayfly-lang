@@ -1,0 +1,15 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+led1_on ( ) => () {
+	misd(2s);
+};
+led1_off ( ) => ();
+
+// Flow
+led1_on -> led1_off {
+	
+}
+
+//Edge Dependencies
+led1_on => led1_off {
+	expires(1s);
+}

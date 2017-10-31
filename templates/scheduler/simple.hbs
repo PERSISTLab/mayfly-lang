@@ -1,0 +1,54 @@
+{{#task_graph}}	
+for(int8_t i=0;i<NUM_NODES_TASK_{{name_caps}};i++) {
+      // If all constraints for this node are satisfied, and task can generate data, execute it and break
+      if(constraints_satisfied(pl_{{name}}[i]) ) {
+        __mayfly_state.current_node_id = pl_{{name}}[i];
+        // We started a task
+        __mayfly_state.magic_number = 0;
+        switch(__mayfly_state.current_node_id) {
+          {{#task_list}}
+          case {{task_id}}: // task: {{task_name}}
+          {  
+
+            {{task_name}}(
+            	/* Inputs  */ {{#task_input}}__{{source}}_output.{{name}}{{^last}}, {{/last}}{{/task_input}}{{#hasOutputs}}{{#hasInputs}},{{/hasInputs}}
+            	/* Outputs */ {{#task_output}}
+            	WRITE_BUF_PTR(__{{task_name}}_output.{{name}},__{{task_name}}_output.ndx,{{buffer_size_mask}}){{^last}}, {{/last}}
+            	{{/task_output}}{{/hasOutputs}}
+            	);
+
+            {{#has_outgoing}}
+            // Increase num of data collected
+            __{{task_name}}_output.num++;
+            if(__{{task_name}}_output.num >= {{buffer_num_max}}) {
+             	// Data is available on all outgoing edges
+            	__{{task_name}}_output.status |= ({{#out_edge_data}}DATA_AVAILABLE_{{destCaps}}{{^lastEdge}}+{{/lastEdge}}{{/out_edge_data}});
+            }{{/has_outgoing}}
+            // Set timestamp
+            WRITE_BUF(__{{task_name}}_output.timestamp, 
+            		  __{{task_name}}_output.ndx, 
+            		  __mayfly_state.current_time, {{buffer_size_mask}})
+           	__{{task_name}}_output.ndx++; // overflow is exepcted and by design
+           	{{#has_incoming}}
+			// Task completed, clear data on all incoming edges to this task *(cannot be rolled back)*
+			// First come first serve data
+			//uint8_t reset_ndx=0;
+			{{#in_edge_data}}
+			__{{source}}_output.status = 0; //&= ~DATA_AVAILABLE_{{destCaps}};
+			__{{source}}_output.num = 0;
+			//for(reset_ndx=0;reset_ndx<{{incoming_buffer_num_max}};reset_ndx++) __{{source}}_output.timestamp[reset_ndx] = 0;
+            {{/in_edge_data}}{{/has_incoming}}
+            // Reset the for loop since if we have something else to do now, we should do it before sleeping
+            i = -1; 
+            break;
+            }
+          {{/task_list}}  
+        }
+		// Made it through task
+        __mayfly_state.magic_number = MAGIC_NUMBER;
+#ifdef DEBUG
+		EIF_PRINTF("n: %i\r\n", __mayfly_state.current_node_id);
+#endif
+      }
+    }
+{{/task_graph}}

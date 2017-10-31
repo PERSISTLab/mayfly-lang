@@ -1,0 +1,45 @@
+/* Optional global policies, these can be redefined per flow */
+/*
+{:  
+	adaptation_strategy(ALL_OR_NOTHING);
+	scheduling_policy(FINISH_FLOW);
+:}
+*/
+
+/* Task definitions */
+read_xl ( ) => ( uint8_t x, uint8_t y, uint8_t z );								// Read the ADXL362 
+read_gyro ( ) => ( uint8_t x, uint8_t y, uint8_t z );								// Read the L3GD20H 
+read_magnetometer ( ) => ( uint8_t x, uint8_t y, uint8_t z );						// Read the HMC5883L
+
+calc_xl_mag ( uint8_t x, uint8_t y, uint8_t z ) => ( uint16_t mag, int send );				// Get the magnitude
+calc_gyro_mag ( uint8_t x, uint8_t y, uint8_t z ) => ( uint16_t mag );				// Get the magnitude
+calc_mag_mag ( uint8_t x, uint8_t y, uint8_t z ) => ( uint16_t mag );				// Get the magnitude
+
+send_xl ( uint16_t mag, int send ) => ();
+
+/* Flow definitions and policy information */
+read_xl -> calc_xl_mag[_,1] -> send_xl {
+	priority(1);	// Default priority is 100, 1 is highest priority, 2 is lower priority, etc
+    //adaptation_strategy(ALL_OR_NOTHING); 
+    // scheduling_policy(FINISH_FLOW);
+}
+
+read_gyro -> calc_gyro_mag;
+read_magnetometer -> calc_mag_mag;
+
+/* Dependancies / Constraints */
+read_xl => calc_xl_mag {
+   misd( 7s );                          
+}
+
+read_gyro => calc_gyro_mag {
+    collect( 5, 30s, overlapped );
+}
+
+read_magnetometer => calc_mag_mag {
+   misd( 20s );
+}
+
+calc_xl_mag => send_xl {
+	expires(7s);
+}

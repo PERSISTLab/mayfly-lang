@@ -1,0 +1,26 @@
+/* Task definitions */
+read_xl ( ) => ( uint8_t ax, uint8_t ay, uint8_t az ); 
+read_gyro ( ) => ( uint8_t gx, uint8_t gy, uint8_t gz ); 
+read_magnetometer ( ) => ( uint8_t mx, uint8_t my, uint8_t mz );
+
+calc_magnitudes (uint8_t ax, uint8_t ay, uint8_t az, uint8_t mx, uint8_t my, uint8_t mz,  uint8_t gx, uint8_t gy, uint8_t gz ) => ();
+send_xl ( uint16_t mag, int send ) => ();
+
+/* Flow definitions and policy information */
+read_xl -> calc_magnitudes;
+read_gyro -> calc_magnitudes;
+read_magnetometer -> calc_magnitudes;
+
+/* Dependancies / Constraints */
+read_xl => calc_magnitudes {
+   expires( 7s );                          
+}
+
+read_gyro => calc_magnitudes {
+	expires(50s);
+}
+
+read_magnetometer => calc_magnitudes {
+	expires(100s);
+}
+

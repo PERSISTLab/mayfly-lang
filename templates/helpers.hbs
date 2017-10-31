@@ -1,0 +1,29 @@
+// We can execute this task if:
+// controlf flow is routed to us (predicates are satisfied)
+// incoming edges have enough data (collect)
+// That data satisfies constraints on time (expires)
+// And outgoing edges can be filled with new data (misd) 
+uint8_t constraints_satisfied(uint8_t node_id) {
+	uint8_t constraints_satisfied = 1;
+	switch(node_id) {
+		{{#task_constraints}}
+		case {{node_id}}: // task "{{name}}"
+			{{#has_incoming}}
+			// If no data available on incoming edges (collect), then can't execute task
+			{{#incoming_edges}}
+			if(!(__{{source}}_output.status & DATA_AVAILABLE_{{name_caps}})) constraints_satisfied = 0;
+			{{/incoming_edges}}{{/has_incoming}}
+			
+			{{#has_outgoing}}
+			// If we cannot generate data on *any* outgoing edges (misd) then can't execute task
+			if((__{{name}}_output.status & ({{#outgoing_edges}}DATA_AVAILABLE_{{destCaps}}{{^lastEdge}}+{{/lastEdge}}{{/outgoing_edges}}))) {
+				constraints_satisfied = 0;
+			}{{/has_outgoing}}
+{{#constraints}}
+
+{{> constraints/expires}}{{> constraints/collect}}{{> constraints/predicate}}{{> constraints/misd}}{{/constraints}} 
+			break;
+		{{/task_constraints}}
+	}
+	return constraints_satisfied;
+}	

@@ -1,0 +1,50 @@
+/* Optional global policies, these can be redefined per flow */
+
+{:  
+	adaptation_strategy(ALL_OR_NOTHING); // ERR: Policy not supported
+	scheduling_method(FINISH_FLOW, NOT_REAL);	// ERR: Policy arguments dont match
+:}
+
+/* Task definitions */
+read_xl ( ) => ( uint8_t x, uint8_t y, uint8_t z ); 
+read_gyro ( ) => ( uint8_t x, uint8_t y, uint8_t z );
+read_magnetometer ( ) => ( uint8_t x, uint8_t y, uint8_t z );
+
+calc_xl_mag ( uint8_t x, uint8_t y /*, uint8_t z */) => ( uint16_t mag, int send );				// ERR: Output size does not match input size
+calc_gyro_mag ( uint8_t x, uint8_t y, int z ) => ( uint16_t mag );				// ERR: Output does not match input in type
+calc_mag_mag ( uint8_t x, uint8_t y, uint8_t z ) => ( short mag );				// ERR: short is not a supported type
+
+send_xl ( uint16_t mag, int send ) => ();
+
+/* Flow definitions and policy information */
+read_xl -> calc_xl_mag[_,1,_,_] -> send_xl { // ERR: Too many predicate args
+	priority(1);	
+    adaptation_strategy(ALL_OR_NOTHING); // ERR: Policy not supported 
+}
+
+read_gyro -> calc_gyro_mag;
+read_magnetometer -> calc_mag_mag;
+
+read_error_task -> does_not_exist;	// ERR: Tasks not supported
+
+calc_gyro_mag -> read_gyro; // ERR: Edges not defined for flow
+
+/* Dependancies / Constraints */
+read_xl => calc_xl_mag {
+   misd( 7s );  
+   not_real_constraint(100); // ERR: Constraint not supported
+   collect(1,2,3,too_many_args); // ERR: Too many arguments
+}
+
+read_gyro => calc_gyro_mag {
+	collect( 5, 30s, overlapped );
+}
+
+read_magnetometer => calc_mag_mag {
+   misd( 20s );
+   expires( 7s );              
+}
+
+read_error_task => does_not_exist { // ERR: Tasks do not exist
+	misd( 2s );
+}

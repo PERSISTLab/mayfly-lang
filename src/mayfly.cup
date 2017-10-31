@@ -1,0 +1,248 @@
+package edu.clemson.mayfly.parser;
+/**
+ * Parser generator for Mayfly
+ * 
+ * @author Josiah Hester <josiah@northwestern.edu>
+ */
+   
+/* ----------------------Preliminary Declarations Section--------------------*/
+
+import java_cup.runtime.*;
+import java.util.Vector;
+import edu.clemson.mayfly.ast.*;
+   
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+    
+    /* Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuilder called 'm' with the string 'Error' in it. */
+        StringBuilder m = new StringBuilder("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuilder error message
+                   the line number of the error in the input. */
+                m.append(" in line "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuilder error message
+                       the column number of the error in the input. */
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuilder error message created in
+           this method the message that was passed into this method. */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuilder 'm', which contains
+           an error message, out on a line. */
+        System.err.println(m);
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+        System.exit(1);
+    }
+:};
+   
+
+   
+/* ------------Declaration of Terminals and Non Terminals Section----------- */
+terminal           ARROW, PIPE;   
+terminal           RCURLY_COLON, LCURLY_COLON;
+terminal           SEMI, LCURLY, RCURLY, LBRACE, RBRACE, LPAREN, RPAREN, COMMA;
+terminal Integer   NUMBER;
+terminal String    TIME, IDENTIFIER;
+
+non terminal Program program;
+
+non terminal Vector policy_list;
+non terminal Vector task_list;
+non terminal TaskDefinition task_def;
+non terminal Vector arg_list;
+non terminal Vector typed_list;
+
+non terminal Vector flow;
+non terminal Vector flow_list;
+non terminal Flow flow_statement;
+
+non terminal Edge edge;
+non terminal Vector edge_list;
+
+non terminal Object comma_list_element;
+non terminal Vector comma_list;
+
+non terminal Constraint constraint;   
+non terminal Vector constraint_list;
+
+
+/* -------------Precedence and Associatively of Terminals Section----------- */
+// NONE
+
+/* ----------------------------Grammar Section-------------------- */
+program ::=
+				policy_list:plist task_list:task_defs flow_list:flows edge_list:edges
+				{: RESULT = new Program(plist, task_defs, flows, edges); :}
+				|
+				task_list:task_defs flow_list:flows edge_list:edges
+				{: RESULT = new Program(new Vector<Constraint>(), task_defs, flows, edges); :} 
+				;
+
+
+/*
+ * GLOBAL, PROGRAM WIDE POLICIES
+ */
+policy_list ::=
+				LCURLY_COLON constraint_list:dl RCURLY_COLON
+				{: RESULT = dl; :}
+				;
+/*
+ * TASK DEFINITIONS
+ */
+task_list ::= 
+				task_list :l task_def:n
+				{: l.add(n); RESULT=l; :}
+				| task_def: n
+				{: Vector<TaskDefinition> v = new Vector<TaskDefinition>(); v.add(n); RESULT=v; :}
+				;
+
+task_def ::= 
+				IDENTIFIER:i arg_list:in ARROW arg_list:out LCURLY constraint_list:dl RCURLY SEMI
+				{: RESULT = new TaskDefinition(ileft, i, in, out, dl); :}
+				| 
+				IDENTIFIER:i arg_list:in ARROW arg_list:out SEMI
+				{: RESULT = new TaskDefinition(ileft, i, in, out, new Vector<Constraint>()); :}
+				;
+
+arg_list ::= 
+				LPAREN typed_list:l RPAREN 
+				{: RESULT=l; :}
+				| 
+				LPAREN RPAREN 
+				{: RESULT=new Vector<Argument>(); :}
+				;
+
+typed_list ::= 
+				typed_list:l COMMA IDENTIFIER:t IDENTIFIER:i LBRACE NUMBER:sz RBRACE 
+				{: l.add(new Argument(t,i, true, sz)); RESULT=l; :}
+				| 
+				IDENTIFIER:t IDENTIFIER:i LBRACE NUMBER:sz RBRACE
+				{: Vector<Argument> v=new Vector<Argument>(); v.add(new Argument(t,i,true, sz)); RESULT=v; :}
+				|
+				typed_list:l COMMA IDENTIFIER:t IDENTIFIER:i 
+				{: l.add(new Argument(t,i)); RESULT=l; :}
+				| 
+				IDENTIFIER:t IDENTIFIER:i 
+				{: Vector<Argument> v=new Vector<Argument>(); v.add(new Argument(t,i)); RESULT=v; :}
+				;
+
+
+/*
+ * FLOW DEFINITIONS
+ */
+flow_list ::= 
+				flow_list:fl flow_statement:f
+			 	{: fl.add(f); RESULT=fl; :}
+			 	| flow_statement:f
+			 	{: Vector<Flow> v = new Vector<Flow>(); v.add(f); RESULT=v; :}
+			 	;
+
+flow_statement ::= 
+				flow:ff LCURLY constraint_list:cons RCURLY
+				{: RESULT = new Flow(ffleft, ff, cons); :}
+				|
+				flow:ff SEMI
+				{: RESULT = new Flow(ffleft, ff, new Vector<Constraint>()); :}
+				;
+
+flow ::= 
+				flow:f LBRACE comma_list:cl RBRACE PIPE IDENTIFIER:name
+				{: 
+					FlowPart last_flow = (FlowPart) f.lastElement();
+					last_flow.setPredicate(cl);
+					f.set(f.size()-1, last_flow);
+					f.add(new FlowPart(name, new Vector<Object>())); 
+					RESULT=f; 
+				:}
+				|
+				flow:f PIPE IDENTIFIER:name
+				{: 
+					f.add(new FlowPart(name, new Vector<Object>()));
+					RESULT=f; 
+				:} 
+			    | 
+			    IDENTIFIER:f
+				{: 
+					Vector<FlowPart> v=new Vector<FlowPart>(); 
+					v.add(new FlowPart(f, new Vector<Object>()));
+					RESULT=v; 
+				:}
+			   	;
+
+/*
+ * CONSTRAINTS
+ */
+edge_list ::= 
+				edge_list:el edge:e
+	   			{: el.add(e); RESULT = el; :}
+	   			| edge:e
+	   			{: Vector<Edge> v = new Vector<Edge>(); v.add(e); RESULT=v; :}
+	   			;
+	   			
+edge ::= 
+				IDENTIFIER:node1 ARROW IDENTIFIER:node2 LCURLY constraint_list:dl RCURLY
+	   			{: RESULT = new Edge(node1left, node1, node2, dl); :}
+	   			;
+				
+constraint_list ::= 
+				constraint_list:dl constraint:d
+	   			{: dl.add(d); RESULT = dl; :}
+	   			|
+	   			{: RESULT = new Vector<Constraint>(); :}
+	   			;
+	   			
+constraint ::= 
+				IDENTIFIER:i LPAREN comma_list:l RPAREN SEMI
+	   			{: RESULT = new Constraint(ileft, i, l); :}
+	   			| IDENTIFIER:i LPAREN RPAREN SEMI
+	   			{: RESULT = new Constraint(ileft, i, null); :}
+	   			;
+
+comma_list_element ::= 
+				IDENTIFIER:i
+	   			{: RESULT = i; :} 
+	   			| TIME:t
+	   			{: RESULT = t; :}
+	   			| NUMBER:n
+	   			{: RESULT = n; :}
+	   			; 
+
+comma_list ::= 
+				comma_list:l COMMA comma_list_element:e 
+	   		    {: l.add(e); RESULT = l; :}
+	   		 	| comma_list_element:e
+	   		 	{: Vector<Object> v = new Vector<Object>(); v.add(e); RESULT = v; :}
+	   		 	;
+	   		 	

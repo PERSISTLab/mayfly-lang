@@ -1,0 +1,22 @@
+/* Task definitions */
+generate_schedule () => (uint8_t i);
+execute_schedule_simple (uint8_t i ) => ( ); 
+execute_schedule_random (uint8_t i ) => ( ); 
+execute_schedule_look (uint8_t i ) => ( );
+
+/* Flow definitions and policy information */
+generate_schedule -> execute_schedule_simple
+generate_schedule -> execute_schedule_random
+generate_schedule -> execute_schedule_look
+
+/* Dependancies / Constraints */
+generate_schedule => execute_schedule_simple {
+	
+}
+generate_schedule => execute_schedule_random {
+	
+}
+
+generate_schedule => execute_schedule_look {
+	
+}

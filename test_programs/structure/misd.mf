@@ -1,0 +1,22 @@
+/* Task definitions */
+fubar () => ( uint8_t x1, uint8_t y1, uint8_t z1 );
+fu ( uint8_t x1, uint8_t y1, uint8_t z1 ) => ( ); 
+bar( uint8_t x1, uint8_t y1, uint8_t z1 ) => ( );
+du( ) => ( );
+
+/* Flow definitions and policy information */
+fubar -> fu;
+fubar -> bar -> du;
+
+/* Dependancies / Constraints */
+fubar => fu {
+	
+}
+
+fubar => bar {
+	misd(5s);
+}
+
+bar => du {
+	misd(10s); // Dont generate data to put on this edge more than once every five seconds
+}

@@ -1,0 +1,33 @@
+#include <string.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <{{target}}.h>
+
+#include "mayfly.h"
+#include "usertypes.h"
+#include <libmsp/periph.h>
+#include <libmsp/clock.h>
+#include <libmsp/watchdog.h>
+#include <libmsp/gpio.h>
+#include <libwispbase/accel.h>
+
+#ifdef CONFIG_EDB
+#include <libedb/edb.h>
+#endif
+
+#ifdef TEST_EIF_PRINTF
+#include <libio/printf.h>
+#endif // TEST_EIF_PRINTF
+
+// Macros for ring buffer, must increment ndx after usage
+#define WRITE_BUF(buffer, ndx, value, size) buffer[ndx & size] = value;
+#define WRITE_BUF_DATA(buffer, ndx, value, size, datatype) memcpy(buffer[ndx & size], value, sizeof(datatype));
+#define READ_BUF(buffer, ndx, Xn, size)  buffer[(ndx + (~Xn)) & size];
+#define WRITE_BUF_PTR(buffer, ndx, size) &buffer[ndx & size]
+
+// Status register, data available on all outgoing edges
+#define DATA_AVAILABLE 0b11111111
+
+ 

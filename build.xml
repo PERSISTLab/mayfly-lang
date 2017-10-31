@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<project name="mayfly" basedir="." default="all">
+	<property name="src.dir" value="src"/>
+	<property name="testreports.dir" value="testreports"/>
+	<property name="classes.dir" value="./bin"/>
+	<property name="lib.dir" value="lib"/>
+	<property name="gen.dir" value="gen"/>
+	<property name="java_cup.classes" 
+	    value="./lib/java-cup-11a.jar"/>
+	<!-- the directory of the jar file -->
+    <property name="jar.dir" value="dist"/>
+
+    <!-- the jar file itself -->
+    <property name="jar.file" value="${jar.dir}/${ant.project.name}-launch.jar"/>
+
+    <!-- the fully qualified name of the main class -->
+    <property name="main" value="edu.clemson.mayfly.main.Main"/>
+    <path id="libraries.path">    
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+	<target name="clean" description="Delete generated files">
+		<delete dir="${classes.dir}/edu" failonerror="false"/>
+		<delete dir="${jar.dir}"  failonerror="false"/>
+		<delete dir="${classes.dir}/lib"  failonerror="false"/>
+		<delete file="${classes.dir}/mayfly.cup"  failonerror="false"/>
+		<delete file="${classes.dir}/mayfly.flex"  failonerror="false"/>
+		<delete file="${gen.dir}/main.c"  failonerror="false"/>
+		<delete failonerror="false">
+			<fileset dir="docs">
+				<include name="**/*.html"/>
+			</fileset>
+		</delete>
+		<delete failonerror="false">
+			<fileset dir="${src.dir}/edu/clemson/mayfly/parser">
+				<include name="*.java"/>
+			</fileset>
+		</delete>
+	</target>
+
+	<target name="generate" description="Generate lexer and parser">
+		<parallel>
+			<antcall target="scanner-generate"/>
+			<antcall target="parser-generate"/>
+		</parallel>
+	</target>
+
+	<target name="prepare" description="Get ready...">
+		<mkdir dir="${classes.dir}"/>
+	</target>
+	
+	<target name="scanner-generate">
+		<taskdef classname="jflex.anttask.JFlexTask" name="jflex" classpath="lib/jflex-1.6.1.jar" />
+		<jflex file="src/mayfly.flex" destdir="src/"/>
+	</target>
+
+	<target name="parser-generate">
+		<taskdef name="cup" classname="java_cup.anttask.CUPTask" classpath="lib/java-cup-11a.jar" />
+		<cup srcfile="src/mayfly.cup" destdir="src/" interface="true" />
+	</target>
+
+	<target name="compile" depends="prepare,generate" description="Compiles the compiler.">
+		<javac srcdir="src/edu/clemson/mayfly"
+		includeantruntime="false"
+	    destdir="${classes.dir}"
+	    debug="true">
+			<classpath refid="libraries.path"/>
+		</javac>
+	</target>
+
+	<target name="dist" depends="compile" description="Makes a distribution version of the compiler, into a jar file.">
+		    <mkdir dir="${jar.dir}"/>
+		    <mkdir dir="${classes.dir}/${lib.dir}"/>
+		    <copy todir="${classes.dir}/${lib.dir}" flatten="true">
+		        <path refid="libraries.path"/>
+		    </copy>
+
+		    <manifestclasspath property="manifest.classpath" jarfile="${jar.file}">
+		        <classpath refid="libraries.path"/>
+		    </manifestclasspath>
+
+		    <jar destfile="${jar.file}" basedir="${classes.dir}">
+		        <manifest>
+		            <attribute name="Main-Class" value="${main}"/>
+		            <attribute name="Class-Path" value="${manifest.classpath}"/>
+		        </manifest>
+		    </jar>  
+	</target>
+	
+	<target name="all" depends="dist"/>
+
+
+</project>

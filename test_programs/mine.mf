@@ -1,0 +1,24 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+gps_sensor() => (int x, int y);
+temperature(int x, int y) => (int x, int y, double temp);
+pressure() => (int x, int y, double temp, double pressure);
+peizo => (int x, int y, double temp, double pressure, int vibrations);
+carbonmonoxide => (int x, int y, double temp, double pressure, int vibrations, double co_level);
+alert_miners_peizo => ();
+alert_miners_co => ();
+sendData => ();
+
+// Flow
+gps_sensor -> temperature -> pressure -> peizo;
+peizo[true] -> alert_miners_peizo;
+peizo[false] -> carbonmonoxide;
+carbonmonoxide[true]-> alert_miners_co;
+carbonmonoxide[false]->sendData;
+
+//Edge Dependencies
+pressure => peizo {
+min_spacing(10s);
+}
+
+
+

@@ -1,6 +1,7 @@
-## Description
+Mayfly Compiler
+======
 
-Mayfly language specification and compiler acoompanying the paper titled [*Timely Execution on Intermittently Powered Batteryless Sensors*](http://josiahhester.com/cv/files/mayflysensys2017.pdf) in the 15th ACM Conference on Embedded Networked Sensor Systems [(SenSys 2017)](http://sensys.acm.org/2017/).
+Mayfly language specification and compiler acompanying the paper titled [*Timely Execution on Intermittently Powered Batteryless Sensors*](http://josiahhester.com/cv/files/mayflysensys2017.pdf) in the 15th ACM Conference on Embedded Networked Sensor Systems [(SenSys 2017)](http://sensys.acm.org/2017/).
 
 ## Setup
 First ensure JAVA, and ANT are installed.

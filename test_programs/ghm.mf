@@ -1,0 +1,33 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+moisture ( int need ) => (int m);
+temperature ( int m ) => ( int m, int temp );
+needs_water (int m, int temp) => (int m, int temp, int need );
+send_data ( int need ) => ( );
+reject_data (int need ) => ( );
+some_node ( ) => ( int c, int d );
+
+// Flow
+moisture -> temperature ->  needs_water {}
+needs_water[_,_,0] -> send_data {}
+needs_water[_,_,1] -> reject_data {}
+some_node -> needs_water {}
+
+//Edge Dependencies
+moisture => temperature {
+   misd( 7s );                          
+}
+
+temperature => needs_water {
+    aggregate( 5, 30s, overlapped );
+}
+
+needs_water => send_data {
+   misd( 20s );
+   buffer( 4, evict_newest );              
+}
+
+needs_water => reject_data {
+
+}
+
+some_node => needs_water { }

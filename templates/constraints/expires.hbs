@@ -1,0 +1,15 @@
+			{{#isExpires}}
+			// Expires
+			if( __{{source}}_output.num >= {{incoming_buffer_size_mask}}+1 &&
+			   __mayfly_state.current_time > 
+				(__{{source}}_output.timestamp[(__{{source}}_output.ndx + (~{{incoming_buffer_read_index}})) & {{incoming_buffer_size_mask}}])+{{expires}}) {
+				constraints_satisfied = 0;
+				#ifdef DEBUG
+				EIF_PRINTF("{{source}} expired\r\n");
+				#endif
+				__{{source}}_output.num--;
+				__{{source}}_output.timestamp[(__{{source}}_output.ndx + (~{{incoming_buffer_read_index}})) & {{incoming_buffer_size_mask}}]=0;
+				// Double check edges and set output status of incoming edges
+				__{{source}}_output.status = 0;
+				
+			}{{/isExpires}}

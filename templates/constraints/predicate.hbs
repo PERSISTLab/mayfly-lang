@@ -1,0 +1,5 @@
+			{{#isPredicate}}
+			// Don't proceed if predicate not satisfied
+			if(__{{source}}_output.{{output_name}}[(__{{source}}_output.ndx + 1) & {{collectsizeminusone}}] != {{predicate_val}}) {
+				constraints_satisfied = 0;
+			}{{/isPredicate}}

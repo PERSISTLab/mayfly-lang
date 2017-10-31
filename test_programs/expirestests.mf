@@ -1,0 +1,17 @@
+// Define Nodes -- infer inputs and outputs that are omitted.
+gen_data ( ) => (int d);
+pass_data ( int d) => (int e);
+consume_data ( int e ) => ();
+
+// Flow
+gen_data -> pass_data -> consume_data {
+	
+}
+
+//Edge Dependencies
+gen_data => pass_data {
+	expires(2s);
+}
+pass_data => consume_data {
+	expires(2s);
+}
