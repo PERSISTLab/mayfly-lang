@@ -6,9 +6,6 @@ Mayfly language specification and compiler acompanying the paper titled [*Timely
 ## Setup
 First ensure JAVA, and ANT are installed.
 
-"graph-easy" from CPAN is used to draw Mayfly programs. Use `cpan install Graph::Easy` to install this tool (must have PERL). MayflyCompiler expects this to be located in /usr/local/bin.
-After that, you should be ready to go assuming ant and JAVA are installed. For eclipse setup just import the parent directory.
-
 To build and upload firmware to WISP, or Flicker devices (or other MSP430 based device), refer to those projects: just make sure to update the MSPGCC_ROOT variable in the Makefile.
 
 Only MSP430 devices with FRAM are supported at this time as compiler output.
