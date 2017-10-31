@@ -1,7 +1,8 @@
-Mayfly Compiler
+Mayfly Compiler 
 ======
+<img src="https://raw.githubusercontent.com/PERSISTLab/mayfly-lang/master/media/logo.png" width="128" style="float: left;"> This repository hosts the Mayfly language specification and compiler acompanying the paper titled [*Timely Execution on Intermittently Powered Batteryless Sensors*](http://josiahhester.com/cv/files/mayflysensys2017.pdf) in the 15th ACM Conference on Embedded Networked Sensor Systems [(SenSys 2017)](http://sensys.acm.org/2017/).
 
-Mayfly language specification and compiler acompanying the paper titled [*Timely Execution on Intermittently Powered Batteryless Sensors*](http://josiahhester.com/cv/files/mayflysensys2017.pdf) in the 15th ACM Conference on Embedded Networked Sensor Systems [(SenSys 2017)](http://sensys.acm.org/2017/).
+This project is part of an ongoing collaboration between Clemson University and Northwestern University, originally initiated at Clemson under Prof. Jacob Sorber, with Josiah Hester.
 
 ## Setup
 First ensure JAVA, and ANT are installed.
