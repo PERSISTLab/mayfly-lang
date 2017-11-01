@@ -105,7 +105,7 @@ This research is based upon work supported by the National Science Foundation un
 ## License
 
 	MIT License
-	Copyright 2017 Josiah Hester, Kevin Storer, Jacob Sorber
+	Copyright 2017 Josiah Hester, Kevin Storer, Jacob Sorber, Clemson University
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy of this 
 	software and associated documentation files (the "Software"), to deal in the Software 
